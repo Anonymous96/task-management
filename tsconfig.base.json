@@ -17,7 +17,8 @@
     "paths": {
       "@loginsvi/account": ["apps/task-management/libs/account/src/index.ts"],
       "@loginsvi/account-domain": ["libs/account/src/index.ts"],
-      "@loginsvi/admin": ["libs/admin/src/index.ts"]
+      "@loginsvi/admin": ["libs/admin/src/index.ts"],
+      "@loginsvi/infrastructure": ["libs/infrastructure/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
