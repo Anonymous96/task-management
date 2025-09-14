@@ -1,27 +1,28 @@
 {
-  "name": "loginsvi",
+  "name": "task-management",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
   "prefix": "app",
-  "sourceRoot": "apps/loginsvi/src",
+  "sourceRoot": "apps/task-management/src",
   "tags": [],
   "targets": {
     "build": {
       "executor": "@angular-devkit/build-angular:browser",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/apps/loginsvi",
-        "index": "apps/loginsvi/src/index.html",
-        "main": "apps/loginsvi/src/main.ts",
+        "outputPath": "dist/apps/task-management",
+        "index": "apps/task-management/src/index.html",
+        "main": "apps/task-management/src/main.ts",
         "polyfills": ["zone.js"],
-        "tsConfig": "apps/loginsvi/tsconfig.app.json",
+        "tsConfig": "apps/task-management/tsconfig.app.json",
+        "inlineStyleLanguage": "scss",
         "assets": [
           {
             "glob": "**/*",
-            "input": "apps/loginsvi/public"
+            "input": "apps/task-management/public"
           }
         ],
-        "styles": ["apps/loginsvi/src/styles.css"]
+        "styles": ["apps/task-management/src/styles.scss"]
       },
       "configurations": {
         "production": {
@@ -55,10 +56,10 @@
       "executor": "@angular-devkit/build-angular:dev-server",
       "configurations": {
         "production": {
-          "buildTarget": "loginsvi:build:production"
+          "buildTarget": "task-management:build:production"
         },
         "development": {
-          "buildTarget": "loginsvi:build:development"
+          "buildTarget": "task-management:build:development"
         }
       },
       "defaultConfiguration": "development"
@@ -66,7 +67,7 @@
     "extract-i18n": {
       "executor": "@angular-devkit/build-angular:extract-i18n",
       "options": {
-        "buildTarget": "loginsvi:build"
+        "buildTarget": "task-management:build"
       }
     },
     "lint": {
@@ -76,7 +77,7 @@
       "continuous": true,
       "executor": "@nx/web:file-server",
       "options": {
-        "buildTarget": "loginsvi:build",
+        "buildTarget": "task-management:build",
         "spa": true
       }
     }

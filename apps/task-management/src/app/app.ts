@@ -6,8 +6,8 @@ import { NxWelcome } from './nx-welcome';
   imports: [NxWelcome, RouterModule],
   selector: 'app-root',
   templateUrl: './app.html',
-  styleUrl: './app.css',
+  styleUrl: './app.scss',
 })
 export class App {
-  protected title = 'loginsvi';
+  protected title = 'task-management';
 }

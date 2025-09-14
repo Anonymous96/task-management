@@ -1,0 +1,65 @@
+.not-found-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+.not-found-content {
+  text-align: center;
+  max-width: 500px;
+}
+
+.error-code {
+  font-size: 6rem;
+  font-weight: bold;
+  color: var(--nb-theme-color-primary-500);
+  margin: 0;
+  line-height: 1;
+}
+
+.error-title {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--nb-theme-color-text-1);
+  margin: 1rem 0;
+}
+
+.error-description {
+  font-size: 1.1rem;
+  color: var(--nb-theme-color-text-2);
+  margin: 1.5rem 0 2rem;
+  line-height: 1.6;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.action-buttons button {
+  min-width: 120px;
+}
+
+@media (max-width: 768px) {
+  .error-code {
+    font-size: 4rem;
+  }
+  
+  .error-title {
+    font-size: 1.5rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .action-buttons button {
+    width: 100%;
+    max-width: 200px;
+  }
+}
