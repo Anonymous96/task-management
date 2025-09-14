@@ -22,7 +22,10 @@
             "input": "apps/task-management/public"
           }
         ],
-        "styles": ["apps/task-management/src/styles.scss"]
+        "styles": [
+          "apps/task-management/src/styles.scss",
+          "node_modules/@nebular/theme/styles/prebuilt/default.css"
+        ]
       },
       "configurations": {
         "production": {
