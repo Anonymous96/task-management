@@ -4,7 +4,7 @@
     <button
       class="btn btn-primary"
       (click)="startCreating()"
-      [disabled]="isCreating"
+      [disabled]="isCreating()"
     >
       <span class="icon">➕</span>
       Add New Task
@@ -12,7 +12,7 @@
   </div>
 
   <!-- Create New Task Form -->
-  @if (isCreating) {
+  @if (isCreating()) {
   <div class="create-task-form">
     <div class="form-card">
       <h3>Create New Task</h3>
@@ -22,7 +22,8 @@
           <input
             type="text"
             id="new-task-name"
-            [(ngModel)]="newTask.name"
+            [value]="newTask().name"
+            (input)="updateNewTaskName($event)"
             name="name"
             class="form-control"
             placeholder="Enter task name"
@@ -34,7 +35,8 @@
           <label for="new-task-description">Description *</label>
           <textarea
             id="new-task-description"
-            [(ngModel)]="newTask.description"
+            [value]="newTask().description"
+            (input)="updateNewTaskDescription($event)"
             name="description"
             class="form-control"
             rows="3"
@@ -47,7 +49,8 @@
           <label for="new-task-state">State</label>
           <select
             id="new-task-state"
-            [(ngModel)]="newTask.state"
+            [value]="newTask().state"
+            (change)="updateNewTaskState($event)"
             name="state"
             class="form-control"
           >
@@ -61,7 +64,8 @@
           <label for="new-task-user">Assign to User (Optional)</label>
           <select
             id="new-task-user"
-            [(ngModel)]="newTask.assignedUserId"
+            [value]="newTask().assignedUserId || ''"
+            (change)="updateNewTaskAssignedUser($event)"
             name="assignedUserId"
             class="form-control"
           >
@@ -76,7 +80,7 @@
           <button
             type="submit"
             class="btn btn-success"
-            [disabled]="!newTask.name.trim() || !newTask.description.trim()"
+            [disabled]="!newTask().name.trim() || !newTask().description.trim()"
           >
             Create Task
           </button>
@@ -95,13 +99,13 @@
 
   <!-- Tasks List -->
   <div class="tasks-content">
-    @if (tasks.length > 0) {
+    @if (hasTasks()) {
     <div class="tasks-grid">
       <!-- Task Cards -->
-      @for (task of tasks; track task.id) {
+      @for (task of tasks(); track task.id) {
       <div class="task-card">
         <!-- View Mode -->
-        @if (editingTaskId !== task.id) {
+        @if (editingTaskId() !== task.id) {
         <div class="task-view">
           <div class="task-header">
             <h3 class="task-name">{{ task.name }}</h3>
@@ -140,7 +144,7 @@
                 <span class="user-name">{{ getUserName(task) }}</span>
                 <span class="assignment-status unassigned">Unassigned</span>
               </div>
-              @if (canAssignUser(task) && getAvailableUsers().length > 0) {
+              @if (canAssignUser(task) && availableUsers().length > 0) {
               <button
                 class="btn btn-sm btn-primary"
                 (click)="startAssigning(task.id)"
@@ -152,14 +156,14 @@
               }
 
               <!-- Assignment Mode -->
-              @if (assigningTaskId === task.id) {
+              @if (assigningTaskId() === task.id) {
               <div class="task-assignment-mode">
                 <h4>Assign User to Task: {{ task.name }}</h4>
                 <div class="assignment-form">
                   <div class="form-group">
                     <label>Select User</label>
                     <div class="user-selection">
-                      @for (user of getAvailableUsers(); track user.id) {
+                      @for (user of availableUsers(); track user.id) {
                       <div class="user-option">
                         <button
                           class="btn btn-outline-primary user-btn"
@@ -174,7 +178,7 @@
                           </span>
                         </button>
                       </div>
-                      } @if (getAvailableUsers().length === 0) {
+                      } @if (availableUsers().length === 0) {
                       <div class="no-users">
                         <span class="no-users-message"
                           >No available users. All users are currently assigned
@@ -226,14 +230,15 @@
         }
 
         <!-- Edit Mode -->
-        @if (editingTaskId === task.id && editingTask) {
+        @if (editingTaskId() === task.id && editingTask()) {
         <div class="task-edit">
           <form (ngSubmit)="updateTask()">
             <div class="form-group">
               <label>Task Name *</label>
               <input
                 type="text"
-                [(ngModel)]="editingTask.name"
+                [value]="editingTask()?.name || ''"
+                (input)="updateEditingTaskName($event)"
                 name="editName"
                 class="form-control"
                 required
@@ -243,7 +248,8 @@
             <div class="form-group">
               <label>Description *</label>
               <textarea
-                [(ngModel)]="editingTask.description"
+                [value]="editingTask()?.description || ''"
+                (input)="updateEditingTaskDescription($event)"
                 name="editDescription"
                 class="form-control"
                 rows="3"
@@ -254,7 +260,8 @@
             <div class="form-group">
               <label>State</label>
               <select
-                [(ngModel)]="editingTask.state"
+                [value]="editingTask()?.state || ''"
+                (change)="updateEditingTaskState($event)"
                 name="editState"
                 class="form-control"
               >
@@ -267,15 +274,17 @@
             <div class="form-group">
               <label>Assign to User</label>
               <select
-                [(ngModel)]="editingTask.assignedUserId"
+                [value]="editingTask()?.assignedUserId || ''"
+                (change)="updateEditingTaskAssignedUser($event)"
                 name="editAssignedUserId"
                 class="form-control"
               >
                 <option value="">-- No Assignment --</option>
-                @for (user of getAvailableUsers(); track user.id) {
+                @for (user of availableUsers(); track user.id) {
                 <option [value]="user.id">{{ user.name }}</option>
-                } @if (editingTask.assignedUserId) { @for (user of users; track
-                user.id) { @if (user.id === editingTask.assignedUserId) {
+                } @if (editingTask()?.assignedUserId) { @for (user of users();
+                track user.id) { @if (user.id === editingTask()?.assignedUserId)
+                {
                 <option [value]="user.id">
                   {{ user.name }} (Currently Assigned)
                 </option>
@@ -287,7 +296,8 @@
               <div class="date-info">
                 <span class="date-label">Created:</span>
                 <span class="date-value"
-                  >{{ formatDate(editingTask.createdDate) }}</span
+                  >{{ formatDate(editingTask()?.createdDate || getCurrentDate())
+                  }}</span
                 >
               </div>
               <div class="date-info">
@@ -302,7 +312,7 @@
               <button
                 type="submit"
                 class="btn btn-sm btn-success"
-                [disabled]="!editingTask.name.trim() || !editingTask.description.trim()"
+                [disabled]="!editingTask()?.name?.trim() || !editingTask()?.description?.trim()"
               >
                 Update Task
               </button>

@@ -4,6 +4,9 @@ import {
   Component,
   OnInit,
   OnDestroy,
+  signal,
+  computed,
+  effect,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -26,23 +29,42 @@ import { Task, TaskService, TaskWithUser } from '@loginsvi/task';
 export class Users implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
-  users: User[] = [];
-  tasks: Task[] = [];
-  isCreating = false;
-  editingUserId: number | null = null;
-  isLoading = false;
+  // Signal-based state
+  users = signal<User[]>([]);
+  tasks = signal<Task[]>([]);
+  isCreating = signal(false);
+  editingUserId = signal<number | null>(null);
+  isLoading = signal(false);
 
-  newUser: { name: string } = {
+  // Form state signals
+  newUser = signal<{ name: string }>({
     name: '',
-  };
+  });
 
-  editingUser: User | null = null;
+  editingUser = signal<User | null>(null);
+
+  // Computed signals
+  hasUsers = computed(() => this.users().length > 0);
+  hasTasks = computed(() => this.tasks().length > 0);
+
+  usersWithTasks = computed(() =>
+    this.users().filter((user) => user.assignedTaskId)
+  );
+
+  usersWithoutTasks = computed(() =>
+    this.users().filter((user) => !user.assignedTaskId)
+  );
 
   constructor(
     private userService: UserService,
-    private taskService: TaskService,
-    private cdr: ChangeDetectorRef
-  ) {}
+    private taskService: TaskService
+  ) {
+    // Effect to log state changes (for debugging)
+    effect(() => {
+      console.log('Users count:', this.users().length);
+      console.log('Tasks count:', this.tasks().length);
+    });
+  }
 
   ngOnInit() {
     this.loadData();
@@ -53,8 +75,12 @@ export class Users implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  getCurrentDate(): Date {
+    return new Date();
+  }
+
   private loadData() {
-    this.isLoading = true;
+    this.isLoading.set(true);
 
     // Load both users and tasks for assignment management
     combineLatest([
@@ -64,45 +90,41 @@ export class Users implements OnInit, OnDestroy {
       .pipe(
         takeUntil(this.destroy$),
         finalize(() => {
-          this.isLoading = false;
-          this.cdr.markForCheck();
+          this.isLoading.set(false);
         })
       )
       .subscribe({
         next: ([users, tasks]) => {
-          this.users = users;
-          this.tasks = tasks;
-          this.cdr.markForCheck();
+          this.users.set(users);
+          this.tasks.set(tasks);
         },
         error: (error) => {
           console.error('Error loading data:', error);
-          this.cdr.markForCheck();
         },
       });
   }
 
   startCreating() {
-    this.isCreating = true;
-    this.editingUserId = null;
-    this.newUser = {
+    this.isCreating.set(true);
+    this.editingUserId.set(null);
+    this.newUser.set({
       name: '',
-    };
-    this.cdr.markForCheck();
+    });
   }
 
   cancelCreating() {
-    this.isCreating = false;
-    this.newUser = {
+    this.isCreating.set(false);
+    this.newUser.set({
       name: '',
-    };
-    this.cdr.markForCheck();
+    });
   }
 
   createUser() {
-    if (this.userService.validateUser(this.newUser.name)) {
-      this.isLoading = true;
+    const userData = this.newUser();
+    if (this.userService.validateUser(userData.name)) {
+      this.isLoading.set(true);
       const request: CreateUserRequest = {
-        name: this.newUser.name,
+        name: userData.name,
       };
 
       this.userService
@@ -110,8 +132,7 @@ export class Users implements OnInit, OnDestroy {
         .pipe(
           takeUntil(this.destroy$),
           finalize(() => {
-            this.isLoading = false;
-            this.cdr.markForCheck();
+            this.isLoading.set(false);
           })
         )
         .subscribe({
@@ -128,27 +149,23 @@ export class Users implements OnInit, OnDestroy {
   }
 
   startEditing(user: User) {
-    this.editingUserId = user.id;
-    this.isCreating = false;
-    this.editingUser = { ...user };
-    this.cdr.markForCheck();
+    this.editingUserId.set(user.id);
+    this.isCreating.set(false);
+    this.editingUser.set({ ...user });
   }
 
   cancelEditing() {
-    this.editingUserId = null;
-    this.editingUser = null;
-    this.cdr.markForCheck();
+    this.editingUserId.set(null);
+    this.editingUser.set(null);
   }
 
   updateUser() {
-    if (
-      this.editingUser &&
-      this.userService.validateUser(this.editingUser.name)
-    ) {
-      this.isLoading = true;
+    const user = this.editingUser();
+    if (user && this.userService.validateUser(user.name)) {
+      this.isLoading.set(true);
       const request: UpdateUserRequest = {
-        id: this.editingUser.id,
-        name: this.editingUser.name,
+        id: user.id,
+        name: user.name,
       };
 
       this.userService
@@ -156,8 +173,7 @@ export class Users implements OnInit, OnDestroy {
         .pipe(
           takeUntil(this.destroy$),
           finalize(() => {
-            this.isLoading = false;
-            this.cdr.markForCheck();
+            this.isLoading.set(false);
           })
         )
         .subscribe({
@@ -178,7 +194,7 @@ export class Users implements OnInit, OnDestroy {
   }
 
   deleteUser(userId: number) {
-    const user = this.users.find((u) => u.id === userId);
+    const user = this.users().find((u) => u.id === userId);
 
     if (user?.assignedTaskId) {
       alert(
@@ -188,14 +204,13 @@ export class Users implements OnInit, OnDestroy {
     }
 
     if (confirm('Are you sure you want to delete this user?')) {
-      this.isLoading = true;
+      this.isLoading.set(true);
       this.userService
         .deleteUser(userId)
         .pipe(
           takeUntil(this.destroy$),
           finalize(() => {
-            this.isLoading = false;
-            this.cdr.markForCheck();
+            this.isLoading.set(false);
           })
         )
         .subscribe({
@@ -217,7 +232,7 @@ export class Users implements OnInit, OnDestroy {
   // Task assignment methods
   getAssignedTask(user: User): Task | undefined {
     if (!user.assignedTaskId) return undefined;
-    return this.tasks.find((task) => task.id === user.assignedTaskId);
+    return this.tasks().find((task) => task.id === user.assignedTaskId);
   }
 
   getTaskName(user: User): string {
@@ -236,11 +251,18 @@ export class Users implements OnInit, OnDestroy {
     return this.taskService.getStateClass(task.state);
   }
 
-  getCurrentDate(): Date {
-    return new Date();
-  }
-
   formatDate(date: Date): string {
     return this.userService.formatDate(date);
+  }
+
+  // Signal update methods for template two-way binding
+  updateNewUserName(event: Event) {
+    const name = (event.target as HTMLInputElement).value;
+    this.newUser.update((user) => ({ ...user, name }));
+  }
+
+  updateEditingUserName(event: Event) {
+    const name = (event.target as HTMLInputElement).value;
+    this.editingUser.update((user) => (user ? { ...user, name } : null));
   }
 }
