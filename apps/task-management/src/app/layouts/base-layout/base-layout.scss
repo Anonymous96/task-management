@@ -1,16 +1,68 @@
-.app-container {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
+// Nebular layout styling
+:host {
+  display: block;
+  height: 100vh;
 }
 
-.main-content {
-  display: flex;
-  flex: 1;
+nb-layout {
+  height: 100vh;
+
+  nb-sidebar {
+    height: 100vh;
+    background: #34495e;
+
+    // Force sidebar to start from top without breaking routing
+    ::ng-deep .main-container {
+      top: 0 !important;
+      height: 100vh !important;
+    }
+
+    // Target the custom class to remove top offset
+    ::ng-deep .no-top-offset {
+      position: relative;
+      top: 0 !important;
+      margin-top: 0 !important;
+      padding-top: 0 !important;
+    }
+
+    ::ng-deep app-sidebar {
+      display: block;
+      height: 100%;
+    }
+  }
+
+  nb-layout-column {
+    background: #f8f9fa;
+
+    // Ensure router outlet works properly
+    router-outlet {
+      display: block;
+    }
+
+    // Ensure routed components render properly
+    ::ng-deep > * {
+      display: block;
+    }
+  }
+
+  nb-layout-footer {
+    background: #ffffff;
+    border-top: 1px solid #e9ecef;
+    padding: 1rem;
+  }
 }
 
-.content {
-  flex: 1;
-  padding: 20px;
-  background-color: #f5f5f5;
+// Global override for Nebular's sidebar positioning
+::ng-deep .nb-theme-default nb-layout .layout .layout-container nb-sidebar {
+  top: 0 !important;
+}
+
+::ng-deep
+  .nb-theme-default
+  nb-layout
+  .layout
+  .layout-container
+  nb-sidebar
+  .main-container {
+  top: 0 !important;
 }

@@ -1,0 +1,37 @@
+/* Reset default browser margins and padding */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Remove any default margins from the root app */
+app-root {
+  display: block;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+/* Simple fix for Nebular sidebar top offset */
+::ng-deep .nb-theme-default nb-layout .layout .layout-container nb-sidebar {
+  top: 0 !important;
+}
+
+::ng-deep
+  .nb-theme-default
+  nb-layout
+  .layout
+  .layout-container
+  nb-sidebar
+  .main-container {
+  top: 0 !important;
+}

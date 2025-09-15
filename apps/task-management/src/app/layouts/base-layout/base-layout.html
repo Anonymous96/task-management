@@ -1,13 +1,13 @@
-<div class="app-container">
-  <app-header></app-header>
+<nb-layout>
+  <nb-sidebar position="start">
+    <app-sidebar class="no-top-offset"></app-sidebar>
+  </nb-sidebar>
 
-  <div class="main-content">
-    <app-sidebar></app-sidebar>
+  <nb-layout-column class="colored-column-basic">
+    <router-outlet></router-outlet>
+  </nb-layout-column>
 
-    <main class="content">
-      <router-outlet></router-outlet>
-    </main>
-  </div>
-
-  <app-footer></app-footer>
-</div>
+  <nb-layout-footer>
+    <app-footer></app-footer>
+  </nb-layout-footer>
+</nb-layout>
