@@ -1,1 +1,217 @@
-<p>tasks works!</p>
+<div class="tasks-page">
+  <div class="page-header">
+    <h1>Task Management</h1>
+    <button
+      class="btn btn-primary"
+      (click)="startCreating()"
+      [disabled]="isCreating"
+    >
+      <span class="icon">➕</span>
+      Add New Task
+    </button>
+  </div>
+
+  <!-- Create New Task Form -->
+  @if (isCreating) {
+  <div class="create-task-form">
+    <div class="form-card">
+      <h3>Create New Task</h3>
+      <form (ngSubmit)="createTask()">
+        <div class="form-group">
+          <label for="new-task-name">Task Name *</label>
+          <input
+            type="text"
+            id="new-task-name"
+            [(ngModel)]="newTask.name"
+            name="name"
+            class="form-control"
+            placeholder="Enter task name"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="new-task-description">Description *</label>
+          <textarea
+            id="new-task-description"
+            [(ngModel)]="newTask.description"
+            name="description"
+            class="form-control"
+            rows="3"
+            placeholder="Enter task description"
+            required
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="new-task-state">State</label>
+          <select
+            id="new-task-state"
+            [(ngModel)]="newTask.state"
+            name="state"
+            class="form-control"
+          >
+            <option value="in queue">In Queue</option>
+            <option value="in progress">In Progress</option>
+            <option value="done">Done</option>
+          </select>
+        </div>
+
+        <div class="form-actions">
+          <button
+            type="submit"
+            class="btn btn-success"
+            [disabled]="!newTask.name.trim() || !newTask.description.trim()"
+          >
+            Create Task
+          </button>
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="cancelCreating()"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  }
+
+  <!-- Tasks List -->
+  <div class="tasks-content">
+    @if (tasks.length > 0) {
+    <div class="tasks-grid">
+      <!-- Task Cards -->
+      @for (task of tasks; track task.id) {
+      <div class="task-card">
+        <!-- View Mode -->
+        @if (editingTaskId !== task.id) {
+        <div class="task-view">
+          <div class="task-header">
+            <h3 class="task-name">{{ task.name }}</h3>
+            <span class="task-state" [ngClass]="getStateClass(task.state)">
+              {{ task.state | titlecase }}
+            </span>
+          </div>
+
+          <div class="task-description">
+            <p>{{ task.description }}</p>
+          </div>
+
+          <div class="task-dates">
+            <div class="date-info">
+              <span class="date-label">Created:</span>
+              <span class="date-value">{{ formatDate(task.createdDate) }}</span>
+            </div>
+            <div class="date-info">
+              <span class="date-label">Modified:</span>
+              <span class="date-value"
+                >{{ formatDate(task.modifiedDate) }}</span
+              >
+            </div>
+          </div>
+
+          <div class="task-actions">
+            <button class="btn btn-sm btn-primary" (click)="startEditing(task)">
+              <span class="icon">✏️</span>
+              Edit
+            </button>
+            <button class="btn btn-sm btn-danger" (click)="deleteTask(task.id)">
+              <span class="icon">🗑️</span>
+              Delete
+            </button>
+          </div>
+        </div>
+        }
+
+        <!-- Edit Mode -->
+        @if (editingTaskId === task.id && editingTask) {
+        <div class="task-edit">
+          <form (ngSubmit)="updateTask()">
+            <div class="form-group">
+              <label>Task Name *</label>
+              <input
+                type="text"
+                [(ngModel)]="editingTask.name"
+                name="editName"
+                class="form-control"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Description *</label>
+              <textarea
+                [(ngModel)]="editingTask.description"
+                name="editDescription"
+                class="form-control"
+                rows="3"
+                required
+              ></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>State</label>
+              <select
+                [(ngModel)]="editingTask.state"
+                name="editState"
+                class="form-control"
+              >
+                <option value="in queue">In Queue</option>
+                <option value="in progress">In Progress</option>
+                <option value="done">Done</option>
+              </select>
+            </div>
+
+            <div class="task-dates">
+              <div class="date-info">
+                <span class="date-label">Created:</span>
+                <span class="date-value"
+                  >{{ formatDate(editingTask.createdDate) }}</span
+                >
+              </div>
+              <div class="date-info">
+                <span class="date-label">Will be modified:</span>
+                <span class="date-value"
+                  >{{ formatDate(getCurrentDate()) }}</span
+                >
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button
+                type="submit"
+                class="btn btn-sm btn-success"
+                [disabled]="!editingTask.name.trim() || !editingTask.description.trim()"
+              >
+                Update Task
+              </button>
+              <button
+                type="button"
+                class="btn btn-sm btn-secondary"
+                (click)="cancelEditing()"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+        }
+      </div>
+      }
+    </div>
+    } @else {
+    <!-- Empty State -->
+    <div class="empty-state">
+      <div class="empty-icon">📝</div>
+      <h3>No tasks yet</h3>
+      <p>Create your first task to get started with task management.</p>
+      <button class="btn btn-primary" (click)="startCreating()">
+        <span class="icon">➕</span>
+        Create First Task
+      </button>
+    </div>
+    }
+  </div>
+</div>

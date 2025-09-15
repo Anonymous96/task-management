@@ -7,13 +7,13 @@ import { BaseLayout } from './layouts/base-layout/base-layout';
 import { AuthenticationLayout } from './layouts/authentication-layout/authentication-layout';
 
 export const appRoutes: Route[] = [
-  {
-    // Todo: Add logic if user guest redirect to login, otherwise redirect to users with can activate or can match (guard)
-    // Todo: Lazy loading for routes
-    path: '',
-    component: AuthenticationLayout,
-    children: [{ path: 'login', component: Login }],
-  },
+  // {
+  //   // Todo: Add logic if user guest redirect to login, otherwise redirect to users with can activate or can match (guard)
+  //   // Todo: Lazy loading for routes
+  //   path: '',
+  //   component: AuthenticationLayout,
+  //   children: [{ path: 'login', component: Login }],
+  // },
   {
     path: '',
     component: BaseLayout,
