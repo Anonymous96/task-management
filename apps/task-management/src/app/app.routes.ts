@@ -4,7 +4,6 @@ import { AuthenticationLayout } from './layouts/authentication-layout/authentica
 import { AuthGuard } from '@loginsvi/infrastructure';
 
 export const appRoutes: Route[] = [
-  // Authentication routes with lazy loading
   {
     path: 'auth',
     component: AuthenticationLayout,
@@ -18,7 +17,6 @@ export const appRoutes: Route[] = [
     ],
   },
 
-  // Main application routes with lazy loading
   {
     path: '',
     component: BaseLayout,
@@ -26,14 +24,12 @@ export const appRoutes: Route[] = [
     children: [
       { path: '', redirectTo: '/users', pathMatch: 'full' },
 
-      // Users feature lazy loading
       {
         path: 'users',
         loadComponent: () => import('./pages/users/users').then((m) => m.Users),
         title: 'Users Management - Task Management',
       },
 
-      // Tasks feature lazy loading
       {
         path: 'tasks',
         loadComponent: () => import('./pages/tasks/tasks').then((m) => m.Tasks),
@@ -42,14 +38,12 @@ export const appRoutes: Route[] = [
     ],
   },
 
-  // Convenience login route
   {
     path: 'login',
     redirectTo: '/auth/login',
     pathMatch: 'full',
   },
 
-  // 404 route with lazy loading
   {
     path: '404',
     loadComponent: () =>
@@ -57,7 +51,6 @@ export const appRoutes: Route[] = [
     title: 'Page Not Found - Task Management',
   },
 
-  // Wildcard route redirect to 404
   {
     path: '**',
     redirectTo: '/404',

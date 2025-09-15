@@ -12,7 +12,6 @@ import { login } from '@loginsvi/infrastructure';
   standalone: true,
 })
 export class Login {
-  // Form signals
   username = signal('');
   password = signal('');
   errorMessage = signal('');
@@ -39,7 +38,6 @@ export class Login {
     this.isLoading.set(true);
     this.errorMessage.set('');
 
-    // Simulate a small delay
     setTimeout(() => {
       const success = login(this.username(), this.password());
 
@@ -52,11 +50,5 @@ export class Login {
 
       this.isLoading.set(false);
     }, 500);
-  }
-
-  // Helper for demo
-  fillDemoCredentials() {
-    this.username.set('admin');
-    this.password.set('admin');
   }
 }

@@ -29,21 +29,18 @@ import { Task, TaskService, TaskWithUser } from '@loginsvi/task';
 export class Users implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
-  // Signal-based state
   users = signal<User[]>([]);
   tasks = signal<Task[]>([]);
   isCreating = signal(false);
   editingUserId = signal<number | null>(null);
   isLoading = signal(false);
 
-  // Form state signals
   newUser = signal<{ name: string }>({
     name: '',
   });
 
   editingUser = signal<User | null>(null);
 
-  // Computed signals
   hasUsers = computed(() => this.users().length > 0);
   hasTasks = computed(() => this.tasks().length > 0);
 
@@ -59,7 +56,6 @@ export class Users implements OnInit, OnDestroy {
     private userService: UserService,
     private taskService: TaskService
   ) {
-    // Effect to log state changes (for debugging)
     effect(() => {
       console.log('Users count:', this.users().length);
       console.log('Tasks count:', this.tasks().length);
@@ -82,7 +78,6 @@ export class Users implements OnInit, OnDestroy {
   private loadData() {
     this.isLoading.set(true);
 
-    // Load both users and tasks for assignment management
     combineLatest([
       this.userService.getAllUsers(),
       this.taskService.getAllTasks(),
@@ -229,7 +224,6 @@ export class Users implements OnInit, OnDestroy {
     }
   }
 
-  // Task assignment methods
   getAssignedTask(user: User): Task | undefined {
     if (!user.assignedTaskId) return undefined;
     return this.tasks().find((task) => task.id === user.assignedTaskId);
@@ -255,7 +249,6 @@ export class Users implements OnInit, OnDestroy {
     return this.userService.formatDate(date);
   }
 
-  // Signal update methods for template two-way binding
   updateNewUserName(event: Event) {
     const name = (event.target as HTMLInputElement).value;
     this.newUser.update((user) => ({ ...user, name }));

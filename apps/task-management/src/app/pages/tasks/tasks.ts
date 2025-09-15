@@ -29,7 +29,6 @@ import { User, UserService } from '@loginsvi/user';
 export class Tasks implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
-  // Signal-based state
   tasks = signal<Task[]>([]);
   users = signal<User[]>([]);
   isCreating = signal(false);
@@ -37,7 +36,6 @@ export class Tasks implements OnInit, OnDestroy {
   isLoading = signal(false);
   assigningTaskId = signal<number | null>(null);
 
-  // Form state signals
   newTask = signal<{
     name: string;
     description: string;
@@ -51,7 +49,6 @@ export class Tasks implements OnInit, OnDestroy {
 
   editingTask = signal<Task | null>(null);
 
-  // Computed signals
   availableUsers = computed(() =>
     this.users().filter((user) => !user.assignedTaskId)
   );
@@ -63,7 +60,6 @@ export class Tasks implements OnInit, OnDestroy {
     private taskService: TaskService,
     private userService: UserService
   ) {
-    // Effect to log state changes (for debugging)
     effect(() => {
       console.log('Tasks count:', this.tasks().length);
       console.log('Users count:', this.users().length);
@@ -86,7 +82,6 @@ export class Tasks implements OnInit, OnDestroy {
   private loadData() {
     this.isLoading.set(true);
 
-    // Load both tasks and users for assignment management
     combineLatest([
       this.taskService.getAllTasks(),
       this.userService.getAllUsers(),
@@ -150,7 +145,6 @@ export class Tasks implements OnInit, OnDestroy {
         .subscribe({
           next: (createdTask) => {
             console.log('Task created successfully:', createdTask);
-            // If user was assigned, update user service
             if (taskData.assignedUserId) {
               this.userService
                 .assignTaskToUser(taskData.assignedUserId, createdTask.id)
@@ -220,7 +214,6 @@ export class Tasks implements OnInit, OnDestroy {
     const task = this.tasks().find((t) => t.id === taskId);
 
     if (task?.assignedUserId) {
-      // Unassign user first
       this.userService
         .unassignTaskFromUser(task.assignedUserId)
         .pipe(takeUntil(this.destroy$))
@@ -253,7 +246,6 @@ export class Tasks implements OnInit, OnDestroy {
     }
   }
 
-  // User Assignment Methods
   startAssigning(taskId: number) {
     this.assigningTaskId.set(taskId);
     this.editingTaskId.set(null);
@@ -268,7 +260,6 @@ export class Tasks implements OnInit, OnDestroy {
     const user = this.users().find((u) => u.id === userId);
     const task = this.tasks().find((t) => t.id === taskId);
 
-    // Validation: Check if user already has a task in progress
     if (user?.assignedTaskId) {
       const existingTask = this.tasks().find(
         (t) => t.id === user.assignedTaskId
@@ -281,7 +272,6 @@ export class Tasks implements OnInit, OnDestroy {
       }
     }
 
-    // Validation: Check task state
     if (task?.state === 'done') {
       alert('Cannot assign user to a completed task.');
       return;
@@ -289,7 +279,6 @@ export class Tasks implements OnInit, OnDestroy {
 
     this.isLoading.set(true);
 
-    // Update both task and user
     combineLatest([
       this.taskService.assignUserToTask(taskId, userId),
       this.userService.assignTaskToUser(userId, taskId),
@@ -352,7 +341,6 @@ export class Tasks implements OnInit, OnDestroy {
     }
   }
 
-  // Helper Methods
   getAssignedUser(task: Task): User | undefined {
     if (!task.assignedUserId) return undefined;
     return this.users().find((user) => user.id === task.assignedUserId);
@@ -379,7 +367,6 @@ export class Tasks implements OnInit, OnDestroy {
     return this.taskService.formatDate(date);
   }
 
-  // Signal update methods for template two-way binding
   updateNewTaskName(event: Event) {
     const name = (event.target as HTMLInputElement).value;
     this.newTask.update((task) => ({ ...task, name }));

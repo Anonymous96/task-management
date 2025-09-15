@@ -14,7 +14,6 @@ export const ErrorInterceptor: HttpInterceptorFn = (request, next) => {
 function handleHttpError(error: HttpErrorResponse, request: any): void {
   const message = getErrorMessage(error);
 
-  // Log error for debugging
   console.error('HTTP Error:', {
     status: error.status,
     statusText: error.statusText,
@@ -25,17 +24,14 @@ function handleHttpError(error: HttpErrorResponse, request: any): void {
 }
 
 function getErrorMessage(error: HttpErrorResponse): string {
-  // Server-side error
   if (error.error instanceof ErrorEvent) {
     return `Network error: ${error.error.message}`;
   }
 
-  // HTTP error response
   if (error.error?.message) {
     return error.error.message;
   }
 
-  // Status-based messages
   switch (error.status) {
     case 0:
       return 'Unable to connect to server. Please check your internet connection.';

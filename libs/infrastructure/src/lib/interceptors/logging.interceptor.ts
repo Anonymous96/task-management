@@ -9,7 +9,6 @@ export const LoggingInterceptor: HttpInterceptorFn = (request, next) => {
   const startTime = Date.now();
   const requestId = generateRequestId();
 
-  // Log request
   logRequest(request, requestId);
 
   return next(request).pipe(
@@ -88,7 +87,6 @@ function logError(
 }
 
 function shouldLogRequest(urlOrRequest: string | any): boolean {
-  // In production, you might want to disable logging or only log errors
   if (
     typeof window !== 'undefined' &&
     window.location.hostname !== 'localhost'
@@ -99,7 +97,6 @@ function shouldLogRequest(urlOrRequest: string | any): boolean {
   const url =
     typeof urlOrRequest === 'string' ? urlOrRequest : urlOrRequest.url;
 
-  // Skip logging for certain endpoints
   const skipEndpoints = ['/health', '/ping', '/metrics'];
 
   return !skipEndpoints.some((endpoint) => url.includes(endpoint));
@@ -126,7 +123,6 @@ function sanitizeHeaders(headers: any): any {
 function sanitizeBody(body: any): any {
   if (!body) return body;
 
-  // If body contains sensitive data, sanitize it
   if (typeof body === 'object') {
     const sanitized = { ...body };
     const sensitiveFields = ['password', 'token', 'secret', 'key'];
@@ -146,7 +142,6 @@ function sanitizeBody(body: any): any {
 function sanitizeResponseBody(body: any): any {
   if (!body) return body;
 
-  // For large responses, only show a summary
   if (Array.isArray(body) && body.length > 10) {
     return `[Array with ${body.length} items]`;
   }

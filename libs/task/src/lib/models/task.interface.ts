@@ -5,7 +5,7 @@ export interface Task {
   createdDate: Date;
   modifiedDate: Date;
   state: TaskState;
-  assignedUserId?: number; // User ID if task is assigned to a user
+  assignedUserId?: number;
 }
 
 export type TaskState = 'in queue' | 'in progress' | 'done';

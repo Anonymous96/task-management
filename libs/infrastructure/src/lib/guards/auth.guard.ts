@@ -1,18 +1,6 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 
-/**
- * Simple Auth Guard - Protects routes that require authentication
- *
- * Usage:
- * ```typescript
- * {
- *   path: 'tasks',
- *   component: TasksComponent,
- *   canActivate: [AuthGuard]
- * }
- * ```
- */
 export const AuthGuard: CanActivateFn = (route, state) => {
   const router = inject(Router);
 
@@ -29,20 +17,12 @@ export const AuthGuard: CanActivateFn = (route, state) => {
   return true;
 };
 
-/**
- * Check if user is authenticated
- */
 export function isUserAuthenticated(): boolean {
   const authToken = sessionStorage.getItem('auth_token');
   return !!authToken;
 }
 
-/**
- * Login function
- */
 export function login(username: string, password: string): boolean {
-  // Simple credential check - in a real app, this would be against a backend
-  // For now using hardcoded credentials, but these could come from environment
   const validCredentials = [{ username: 'admin', password: 'admin' }];
 
   const isValid = validCredentials.some(
@@ -63,17 +43,11 @@ export function login(username: string, password: string): boolean {
   return false;
 }
 
-/**
- * Logout function
- */
 export function logout(): void {
   sessionStorage.removeItem('auth_token');
   sessionStorage.removeItem('current_user');
 }
 
-/**
- * Get current user info
- */
 export function getCurrentUser(): {
   username: string;
   loginTime: string;
