@@ -1,8 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { Header } from '../../shared/header/header';
 import { Sidebar } from '../../shared/sidebar/sidebar';
-import { Footer } from '../../shared/footer/footer';
 import {
   NbLayoutModule,
   NbSidebarService,
@@ -14,9 +12,7 @@ import {
   selector: 'app-base-layout',
   imports: [
     RouterOutlet,
-    Header,
     Sidebar,
-    Footer,
     NbLayoutModule,
     NbActionsModule,
     NbSidebarModule,
