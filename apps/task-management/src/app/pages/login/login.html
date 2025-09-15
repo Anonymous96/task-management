@@ -1,1 +1,64 @@
-<p>login works!</p>
+<div class="login-page">
+  <div class="login-container">
+    <div class="login-card">
+      <div class="login-header">
+        <h1>Task Management</h1>
+        <p>Please sign in to continue</p>
+      </div>
+
+      <form (ngSubmit)="onSubmit()" class="login-form">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input
+            type="text"
+            id="username"
+            [value]="username()"
+            (input)="updateUsername($event)"
+            class="form-control"
+            placeholder="Enter username"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            [value]="password()"
+            (input)="updatePassword($event)"
+            class="form-control"
+            placeholder="Enter password"
+            required
+          />
+        </div>
+
+        @if (errorMessage()) {
+        <div class="error-message">{{ errorMessage() }}</div>
+        }
+
+        <button
+          type="submit"
+          class="btn btn-primary btn-full"
+          [disabled]="isLoading() || !username().trim() || !password().trim()"
+        >
+          @if (isLoading()) {
+          <span class="loading-spinner">⟳</span>
+          Signing in... } @else { Sign In }
+        </button>
+      </form>
+
+      <div class="demo-section">
+        <p class="demo-text">Demo credentials:</p>
+        <button
+          type="button"
+          class="btn btn-outline"
+          (click)="fillDemoCredentials()"
+        >
+          Use Admin Credentials
+        </button>
+        <small class="demo-hint">Username: admin, Password: admin</small>
+      </div>
+    </div>
+  </div>
+</div>

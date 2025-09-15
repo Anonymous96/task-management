@@ -1,24 +1,42 @@
 <aside class="sidebar">
+  <!-- User Info Section -->
+  @if (currentUser()) {
+  <div class="user-info">
+    <div class="user-avatar">
+      <span class="avatar-icon">👤</span>
+    </div>
+    <div class="user-details">
+      <span class="username">{{ currentUser()?.username }}</span>
+      <span class="user-role">Administrator</span>
+    </div>
+  </div>
+  }
+
+  <!-- Navigation -->
   <nav class="sidebar-nav">
     <ul class="nav-list">
       <li class="nav-item">
-        <a routerLink="/users" class="nav-link">
+        <a routerLink="/users" routerLinkActive="active" class="nav-link">
           <span class="icon">👥</span>
           Users
         </a>
       </li>
       <li class="nav-item">
-        <a routerLink="/tasks" class="nav-link">
+        <a routerLink="/tasks" routerLinkActive="active" class="nav-link">
           <span class="icon">📋</span>
           Tasks
         </a>
       </li>
-      <li class="nav-item">
-        <a routerLink="/login" class="nav-link">
-          <span class="icon">🔐</span>
-          Login
-        </a>
-      </li>
     </ul>
   </nav>
+
+  <!-- Logout Section -->
+  @if (currentUser()) {
+  <div class="sidebar-footer">
+    <button class="logout-btn" (click)="onLogout()">
+      <span class="icon">🚪</span>
+      Logout
+    </button>
+  </div>
+  }
 </aside>

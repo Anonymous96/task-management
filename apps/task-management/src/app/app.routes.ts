@@ -1,6 +1,7 @@
 import { Route } from '@angular/router';
 import { BaseLayout } from './layouts/base-layout/base-layout';
 import { AuthenticationLayout } from './layouts/authentication-layout/authentication-layout';
+import { AuthGuard } from '@loginsvi/infrastructure';
 
 export const appRoutes: Route[] = [
   // Authentication routes with lazy loading
@@ -21,6 +22,7 @@ export const appRoutes: Route[] = [
   {
     path: '',
     component: BaseLayout,
+    canActivate: [AuthGuard],
     children: [
       { path: '', redirectTo: '/users', pathMatch: 'full' },
 
@@ -38,6 +40,13 @@ export const appRoutes: Route[] = [
         title: 'Tasks Management - Task Management',
       },
     ],
+  },
+
+  // Convenience login route
+  {
+    path: 'login',
+    redirectTo: '/auth/login',
+    pathMatch: 'full',
   },
 
   // 404 route with lazy loading

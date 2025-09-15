@@ -3,9 +3,12 @@
   background-color: #34495e;
   color: white;
   min-height: calc(100vh - 120px);
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar-nav {
+  flex: 1;
   padding: 1rem 0;
 }
 
@@ -39,4 +42,79 @@
 .icon {
   margin-right: 0.75rem;
   font-size: 1.2rem;
+}
+
+// User Info Section
+.user-info {
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+    background-color: #3498db;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    .avatar-icon {
+      font-size: 1.5rem;
+      color: white;
+    }
+  }
+
+  .user-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+
+    .username {
+      font-weight: 600;
+      font-size: 1rem;
+      color: white;
+    }
+
+    .user-role {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.7);
+    }
+  }
+}
+
+// Logout Section
+.sidebar-footer {
+  padding: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+  .logout-btn {
+    width: 100%;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+
+    &:hover {
+      background-color: rgba(231, 76, 60, 0.2);
+      border-color: #e74c3c;
+      color: #e74c3c;
+    }
+
+    .icon {
+      margin-right: 0;
+      font-size: 1rem;
+    }
+  }
 }
