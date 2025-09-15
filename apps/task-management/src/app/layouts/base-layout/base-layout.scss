@@ -10,11 +10,13 @@ nb-layout {
   nb-sidebar {
     height: 100vh;
     background: #34495e;
+    overflow-y: auto;
 
     // Force sidebar to start from top without breaking routing
     ::ng-deep .main-container {
       top: 0 !important;
       height: 100vh !important;
+      overflow-y: auto;
     }
 
     // Target the custom class to remove top offset
@@ -33,6 +35,8 @@ nb-layout {
 
   nb-layout-column {
     background: #f8f9fa;
+    overflow-y: auto;
+    height: 100vh;
 
     // Ensure router outlet works properly
     router-outlet {

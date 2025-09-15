@@ -85,6 +85,28 @@
     padding: 0.5rem 1rem;
     font-size: 0.875rem;
   }
+
+  &.btn-warning {
+    background: #f39c12;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background: #e67e22;
+      transform: translateY(-1px);
+    }
+  }
+
+  &.btn-outline-primary {
+    background: transparent;
+    color: #3498db;
+    border: 2px solid #3498db;
+
+    &:hover:not(:disabled) {
+      background: #3498db;
+      color: white;
+      transform: translateY(-1px);
+    }
+  }
 }
 
 // Create Task Form
@@ -263,6 +285,151 @@
   gap: 0.75rem;
 }
 
+// Task Assignment Section
+.task-assignment {
+  margin-bottom: 1.5rem;
+
+  h4 {
+    margin: 0 0 1rem 0;
+    color: #2c3e50;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+}
+
+.assigned-user,
+.unassigned-user {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border-left: 4px solid #3498db;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  .user-name {
+    font-weight: 500;
+    color: #2c3e50;
+  }
+}
+
+.assignment-status {
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+
+  &.assigned {
+    background: #27ae60;
+    color: white;
+  }
+
+  &.unassigned {
+    background: #95a5a6;
+    color: white;
+  }
+}
+
+// Assignment Mode
+.task-assignment-mode {
+  animation: slideDown 0.3s ease;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 2px solid #3498db;
+
+  h4 {
+    margin: 0 0 1.5rem 0;
+    color: #2c3e50;
+    font-size: 1.1rem;
+  }
+}
+
+.assignment-form {
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+}
+
+.user-selection {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.user-option {
+  .user-btn {
+    width: 100%;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-align: left;
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+  }
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  background: #3498db;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  .user-name {
+    font-weight: 500;
+    color: inherit;
+  }
+
+  .user-status {
+    font-size: 0.875rem;
+    color: #27ae60;
+    font-weight: 500;
+  }
+}
+
+.no-users {
+  padding: 2rem;
+  text-align: center;
+  color: #7f8c8d;
+  background: #ecf0f1;
+  border-radius: 6px;
+
+  .no-users-message {
+    font-style: italic;
+  }
+}
+
+.assignment-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
 // Edit Mode
 .task-edit {
   animation: fadeIn 0.3s ease;
@@ -349,5 +516,25 @@
 
   .task-actions {
     flex-direction: column;
+  }
+
+  .assigned-user,
+  .unassigned-user {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .user-selection {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .assignment-actions {
+    justify-content: stretch;
+
+    .btn {
+      flex: 1;
+    }
   }
 }

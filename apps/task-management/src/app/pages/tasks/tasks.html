@@ -57,6 +57,21 @@
           </select>
         </div>
 
+        <div class="form-group">
+          <label for="new-task-user">Assign to User (Optional)</label>
+          <select
+            id="new-task-user"
+            [(ngModel)]="newTask.assignedUserId"
+            name="assignedUserId"
+            class="form-control"
+          >
+            <option value="">-- No Assignment --</option>
+            @for (user of getAvailableUsers(); track user.id) {
+            <option [value]="user.id">{{ user.name }}</option>
+            }
+          </select>
+        </div>
+
         <div class="form-actions">
           <button
             type="submit"
@@ -97,6 +112,91 @@
 
           <div class="task-description">
             <p>{{ task.description }}</p>
+          </div>
+
+          <!-- Assigned User Information -->
+          <div class="task-assignment">
+            <h4>Assigned User</h4>
+            @if (task.assignedUserId) {
+            <div class="assigned-user">
+              <div class="user-info">
+                <span class="user-name">{{ getUserName(task) }}</span>
+                <span class="assignment-status assigned">Assigned</span>
+              </div>
+              @if (canAssignUser(task)) {
+              <button
+                class="btn btn-sm btn-warning"
+                (click)="unassignUserFromTask(task.id)"
+                title="Unassign user from task"
+              >
+                <span class="icon">🔓</span>
+                Unassign
+              </button>
+              }
+            </div>
+            } @else {
+            <div class="unassigned-user">
+              <div class="user-info">
+                <span class="user-name">{{ getUserName(task) }}</span>
+                <span class="assignment-status unassigned">Unassigned</span>
+              </div>
+              @if (canAssignUser(task) && getAvailableUsers().length > 0) {
+              <button
+                class="btn btn-sm btn-primary"
+                (click)="startAssigning(task.id)"
+                title="Assign user to task"
+              >
+                <span class="icon">👤</span>
+                Assign User
+              </button>
+              }
+
+              <!-- Assignment Mode -->
+              @if (assigningTaskId === task.id) {
+              <div class="task-assignment-mode">
+                <h4>Assign User to Task: {{ task.name }}</h4>
+                <div class="assignment-form">
+                  <div class="form-group">
+                    <label>Select User</label>
+                    <div class="user-selection">
+                      @for (user of getAvailableUsers(); track user.id) {
+                      <div class="user-option">
+                        <button
+                          class="btn btn-outline-primary user-btn"
+                          (click)="assignUserToTask(task.id, user.id)"
+                        >
+                          <span class="user-avatar"
+                            >{{ user.name.charAt(0).toUpperCase() }}</span
+                          >
+                          <span class="user-details">
+                            <span class="user-name">{{ user.name }}</span>
+                            <span class="user-status">Available</span>
+                          </span>
+                        </button>
+                      </div>
+                      } @if (getAvailableUsers().length === 0) {
+                      <div class="no-users">
+                        <span class="no-users-message"
+                          >No available users. All users are currently assigned
+                          to tasks.</span
+                        >
+                      </div>
+                      }
+                    </div>
+                  </div>
+                  <div class="assignment-actions">
+                    <button
+                      class="btn btn-sm btn-secondary"
+                      (click)="cancelAssigning()"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+              }
+            </div>
+            }
           </div>
 
           <div class="task-dates">
@@ -161,6 +261,25 @@
                 <option value="in queue">In Queue</option>
                 <option value="in progress">In Progress</option>
                 <option value="done">Done</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Assign to User</label>
+              <select
+                [(ngModel)]="editingTask.assignedUserId"
+                name="editAssignedUserId"
+                class="form-control"
+              >
+                <option value="">-- No Assignment --</option>
+                @for (user of getAvailableUsers(); track user.id) {
+                <option [value]="user.id">{{ user.name }}</option>
+                } @if (editingTask.assignedUserId) { @for (user of users; track
+                user.id) { @if (user.id === editingTask.assignedUserId) {
+                <option [value]="user.id">
+                  {{ user.name }} (Currently Assigned)
+                </option>
+                } } }
               </select>
             </div>
 

@@ -1,25 +1,213 @@
 <div class="users-page">
   <div class="page-header">
     <h1>Users Management</h1>
-    <button class="btn btn-primary">Add New User</button>
+    <button
+      class="btn btn-primary"
+      (click)="startCreating()"
+      [disabled]="isCreating"
+    >
+      <span class="icon">👤</span>
+      Add New User
+    </button>
   </div>
 
-  <div class="users-content">
-    <div class="users-grid">
-      <div class="user-card">
-        <div class="user-avatar">
-          <span>1</span>
+  <!-- Create New User Form -->
+  @if (isCreating) {
+  <div class="create-user-form">
+    <div class="form-card">
+      <h3>Create New User</h3>
+      <form (ngSubmit)="createUser()">
+        <div class="form-group">
+          <label for="new-user-name">User Name *</label>
+          <input
+            type="text"
+            id="new-user-name"
+            [(ngModel)]="newUser.name"
+            name="name"
+            class="form-control"
+            placeholder="Enter user name"
+            required
+          />
         </div>
-        <div class="user-info">
-          <h3>Name</h3>
-          <p>email</p>
-          <span class="user-role">role</span>
+
+        <div class="form-actions">
+          <button
+            type="submit"
+            class="btn btn-success"
+            [disabled]="!newUser.name.trim()"
+          >
+            Create User
+          </button>
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="cancelCreating()"
+          >
+            Cancel
+          </button>
         </div>
-        <div class="user-actions">
-          <button class="btn btn-sm">Edit</button>
-          <button class="btn btn-sm btn-danger">Delete</button>
-        </div>
-      </div>
+      </form>
     </div>
+  </div>
+  }
+
+  <!-- Users List -->
+  <div class="users-content">
+    @if (users.length > 0) {
+    <div class="users-grid">
+      <!-- User Cards -->
+      @for (user of users; track user.id) {
+      <div class="user-card">
+        <!-- View Mode -->
+        @if (editingUserId !== user.id) {
+        <div class="user-view">
+          <div class="user-header">
+            <h3 class="user-name">{{ user.name }}</h3>
+            @if (user.assignedTaskId) {
+            <span class="task-indicator assigned"> Has Task </span>
+            } @else {
+            <span class="task-indicator available"> Available </span>
+            }
+          </div>
+
+          <div class="user-dates">
+            <div class="date-info">
+              <span class="date-label">Created:</span>
+              <span class="date-value">{{ formatDate(user.createdDate) }}</span>
+            </div>
+            <div class="date-info">
+              <span class="date-label">Modified:</span>
+              <span class="date-value"
+                >{{ formatDate(user.modifiedDate) }}</span
+              >
+            </div>
+          </div>
+
+          <!-- Assigned Task Information -->
+          <div class="assigned-task">
+            <h4>Assigned Task</h4>
+            @if (user.assignedTaskId) {
+            <div class="task-details">
+              <div class="task-info">
+                <span class="task-name">{{ getTaskName(user) }}</span>
+                @if (getTaskState(user)) {
+                <span class="task-state" [ngClass]="getTaskStateClass(user)">
+                  {{ getTaskState(user) | titlecase }}
+                </span>
+                }
+              </div>
+              @if (getAssignedTask(user)) {
+              <div class="task-dates">
+                <div class="task-date">
+                  <span class="label">Task Created:</span>
+                  <span class="value"
+                    >{{ formatDate(getAssignedTask(user)!.createdDate) }}</span
+                  >
+                </div>
+                <div class="task-date">
+                  <span class="label">Task Modified:</span>
+                  <span class="value"
+                    >{{ formatDate(getAssignedTask(user)!.modifiedDate) }}</span
+                  >
+                </div>
+              </div>
+              }
+            </div>
+            } @else {
+            <div class="no-task">
+              <span class="no-task-message">No task assigned</span>
+            </div>
+            }
+          </div>
+
+          <div class="user-actions">
+            <button class="btn btn-sm btn-primary" (click)="startEditing(user)">
+              <span class="icon">✏️</span>
+              Edit
+            </button>
+            <button
+              class="btn btn-sm btn-danger"
+              (click)="deleteUser(user.id)"
+              [disabled]="user.assignedTaskId"
+              [title]="user.assignedTaskId ? 'Cannot delete user with assigned task' : 'Delete user'"
+            >
+              <span class="icon">🗑️</span>
+              Delete
+            </button>
+          </div>
+        </div>
+        }
+
+        <!-- Edit Mode -->
+        @if (editingUserId === user.id && editingUser) {
+        <div class="user-edit">
+          <form (ngSubmit)="updateUser()">
+            <div class="form-group">
+              <label>User Name *</label>
+              <input
+                type="text"
+                [(ngModel)]="editingUser.name"
+                name="editName"
+                class="form-control"
+                required
+              />
+            </div>
+
+            <div class="user-dates">
+              <div class="date-info">
+                <span class="date-label">Created:</span>
+                <span class="date-value"
+                  >{{ formatDate(editingUser.createdDate) }}</span
+                >
+              </div>
+              <div class="date-info">
+                <span class="date-label">Will be modified:</span>
+                <span class="date-value"
+                  >{{ formatDate(getCurrentDate()) }}</span
+                >
+              </div>
+            </div>
+
+            @if (editingUser.assignedTaskId) {
+            <div class="warning-message">
+              <span class="icon">⚠️</span>
+              This user has an assigned task. Task assignment will be preserved.
+            </div>
+            }
+
+            <div class="form-actions">
+              <button
+                type="submit"
+                class="btn btn-sm btn-success"
+                [disabled]="!editingUser.name.trim()"
+              >
+                Update User
+              </button>
+              <button
+                type="button"
+                class="btn btn-sm btn-secondary"
+                (click)="cancelEditing()"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+        }
+      </div>
+      }
+    </div>
+    } @else {
+    <!-- Empty State -->
+    <div class="empty-state">
+      <div class="empty-icon">👥</div>
+      <h3>No users yet</h3>
+      <p>Create your first user to get started with user management.</p>
+      <button class="btn btn-primary" (click)="startCreating()">
+        <span class="icon">👤</span>
+        Create First User
+      </button>
+    </div>
+    }
   </div>
 </div>

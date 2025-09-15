@@ -1,15 +1,21 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-interface Task {
-  id: number;
-  name: string;
-  description: string;
-  createdDate: Date;
-  modifiedDate: Date;
-  state: 'in queue' | 'in progress' | 'done';
-}
+import { Subject, takeUntil, finalize, combineLatest } from 'rxjs';
+import {
+  Task,
+  TaskState,
+  TaskService,
+  CreateTaskRequest,
+  UpdateTaskRequest,
+} from '@loginsvi/task';
+import { User, UserService } from '@loginsvi/user';
 
 @Component({
   selector: 'app-tasks',
@@ -18,12 +24,21 @@ interface Task {
   styleUrl: './tasks.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Tasks implements OnInit {
+export class Tasks implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
   tasks: Task[] = [];
+  users: User[] = [];
   isCreating = false;
   editingTaskId: number | null = null;
+  isLoading = false;
+  assigningTaskId: number | null = null;
 
-  newTask: Omit<Task, 'id' | 'createdDate' | 'modifiedDate'> = {
+  newTask: {
+    name: string;
+    description: string;
+    state: TaskState;
+    assignedUserId?: number;
+  } = {
     name: '',
     description: '',
     state: 'in queue',
@@ -31,55 +46,63 @@ export class Tasks implements OnInit {
 
   editingTask: Task | null = null;
 
+  constructor(
+    private taskService: TaskService,
+    private userService: UserService,
+    private cdr: ChangeDetectorRef
+  ) {}
+
   ngOnInit() {
-    this.loadTasks();
+    this.loadData();
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   getCurrentDate(): Date {
     return new Date();
   }
 
-  private loadTasks() {
-    // Simulate loading tasks (in real app, this would be an API call)
-    this.tasks = [
-      {
-        id: 1,
-        name: 'Setup project structure',
-        description:
-          'Create the initial project structure and configure development environment',
-        createdDate: new Date('2024-01-15'),
-        modifiedDate: new Date('2024-01-15'),
-        state: 'done',
-      },
-      {
-        id: 2,
-        name: 'Implement user authentication',
-        description:
-          'Add login and registration functionality with proper validation',
-        createdDate: new Date('2024-01-16'),
-        modifiedDate: new Date('2024-01-18'),
-        state: 'in progress',
-      },
-      {
-        id: 3,
-        name: 'Design database schema',
-        description:
-          'Plan and implement the database structure for the application',
-        createdDate: new Date('2024-01-17'),
-        modifiedDate: new Date('2024-01-17'),
-        state: 'in queue',
-      },
-    ];
+  private loadData() {
+    this.isLoading = true;
+
+    // Load both tasks and users for assignment management
+    combineLatest([
+      this.taskService.getAllTasks(),
+      this.userService.getAllUsers(),
+    ])
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => {
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        })
+      )
+      .subscribe({
+        next: ([tasks, users]) => {
+          this.tasks = tasks;
+          this.users = users;
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          console.error('Error loading data:', error);
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   startCreating() {
     this.isCreating = true;
     this.editingTaskId = null;
+    this.assigningTaskId = null;
     this.newTask = {
       name: '',
       description: '',
       state: 'in queue',
     };
+    this.cdr.markForCheck();
   }
 
   cancelCreating() {
@@ -89,76 +112,270 @@ export class Tasks implements OnInit {
       description: '',
       state: 'in queue',
     };
+    this.cdr.markForCheck();
   }
 
   createTask() {
-    if (this.newTask.name.trim() && this.newTask.description.trim()) {
-      const task: Task = {
-        id: Math.max(0, ...this.tasks.map((t) => t.id)) + 1,
-        name: this.newTask.name.trim(),
-        description: this.newTask.description.trim(),
+    if (
+      this.taskService.validateTask(this.newTask.name, this.newTask.description)
+    ) {
+      this.isLoading = true;
+      const request: CreateTaskRequest = {
+        name: this.newTask.name,
+        description: this.newTask.description,
         state: this.newTask.state,
-        createdDate: new Date(),
-        modifiedDate: new Date(),
+        assignedUserId: this.newTask.assignedUserId,
       };
 
-      this.tasks.push(task);
-      this.cancelCreating();
+      this.taskService
+        .createTask(request)
+        .pipe(
+          takeUntil(this.destroy$),
+          finalize(() => {
+            this.isLoading = false;
+            this.cdr.markForCheck();
+          })
+        )
+        .subscribe({
+          next: (createdTask) => {
+            console.log('Task created successfully:', createdTask);
+            // If user was assigned, update user service
+            if (this.newTask.assignedUserId) {
+              this.userService
+                .assignTaskToUser(this.newTask.assignedUserId, createdTask.id)
+                .pipe(takeUntil(this.destroy$))
+                .subscribe();
+            }
+            this.cancelCreating();
+          },
+          error: (error) => {
+            console.error('Error creating task:', error);
+            alert('Error creating task. Please try again.');
+          },
+        });
     }
   }
 
   startEditing(task: Task) {
     this.editingTaskId = task.id;
     this.isCreating = false;
+    this.assigningTaskId = null;
     this.editingTask = { ...task };
+    this.cdr.markForCheck();
   }
 
   cancelEditing() {
     this.editingTaskId = null;
     this.editingTask = null;
+    this.cdr.markForCheck();
   }
 
   updateTask() {
     if (
       this.editingTask &&
-      this.editingTask.name.trim() &&
-      this.editingTask.description.trim()
+      this.taskService.validateTask(
+        this.editingTask.name,
+        this.editingTask.description
+      )
     ) {
-      const index = this.tasks.findIndex((t) => t.id === this.editingTask!.id);
-      if (index !== -1) {
-        this.editingTask.modifiedDate = new Date();
-        this.tasks[index] = { ...this.editingTask };
-        this.cancelEditing();
-      }
+      this.isLoading = true;
+      const request: UpdateTaskRequest = {
+        id: this.editingTask.id,
+        name: this.editingTask.name,
+        description: this.editingTask.description,
+        state: this.editingTask.state,
+        assignedUserId: this.editingTask.assignedUserId,
+      };
+
+      this.taskService
+        .updateTask(request)
+        .pipe(
+          takeUntil(this.destroy$),
+          finalize(() => {
+            this.isLoading = false;
+            this.cdr.markForCheck();
+          })
+        )
+        .subscribe({
+          next: (updatedTask) => {
+            if (updatedTask) {
+              console.log('Task updated successfully:', updatedTask);
+              this.cancelEditing();
+            } else {
+              alert('Task not found.');
+            }
+          },
+          error: (error) => {
+            console.error('Error updating task:', error);
+            alert('Error updating task. Please try again.');
+          },
+        });
     }
   }
 
   deleteTask(taskId: number) {
+    const task = this.tasks.find((t) => t.id === taskId);
+
+    if (task?.assignedUserId) {
+      // Unassign user first
+      this.userService
+        .unassignTaskFromUser(task.assignedUserId)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe();
+    }
+
     if (confirm('Are you sure you want to delete this task?')) {
-      this.tasks = this.tasks.filter((task) => task.id !== taskId);
+      this.isLoading = true;
+      this.taskService
+        .deleteTask(taskId)
+        .pipe(
+          takeUntil(this.destroy$),
+          finalize(() => {
+            this.isLoading = false;
+            this.cdr.markForCheck();
+          })
+        )
+        .subscribe({
+          next: (success) => {
+            if (success) {
+              console.log('Task deleted successfully');
+            } else {
+              alert('Task not found.');
+            }
+          },
+          error: (error) => {
+            console.error('Error deleting task:', error);
+            alert('Error deleting task. Please try again.');
+          },
+        });
     }
   }
 
-  getStateClass(state: Task['state']): string {
-    switch (state) {
-      case 'in queue':
-        return 'state-queue';
-      case 'in progress':
-        return 'state-progress';
-      case 'done':
-        return 'state-done';
-      default:
-        return '';
+  // User Assignment Methods
+  startAssigning(taskId: number) {
+    this.assigningTaskId = taskId;
+    this.editingTaskId = null;
+    this.isCreating = false;
+    this.cdr.markForCheck();
+  }
+
+  cancelAssigning() {
+    this.assigningTaskId = null;
+    this.cdr.markForCheck();
+  }
+
+  assignUserToTask(taskId: number, userId: number) {
+    const user = this.users.find((u) => u.id === userId);
+    const task = this.tasks.find((t) => t.id === taskId);
+
+    // Validation: Check if user already has a task in progress
+    if (user?.assignedTaskId) {
+      const existingTask = this.tasks.find((t) => t.id === user.assignedTaskId);
+      if (existingTask?.state === 'in progress') {
+        alert(
+          'This user already has a task in progress. Complete it first before assigning a new one.'
+        );
+        return;
+      }
     }
+
+    // Validation: Check task state
+    if (task?.state === 'done') {
+      alert('Cannot assign user to a completed task.');
+      return;
+    }
+
+    this.isLoading = true;
+
+    // Update both task and user
+    combineLatest([
+      this.taskService.assignUserToTask(taskId, userId),
+      this.userService.assignTaskToUser(userId, taskId),
+    ])
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => {
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        })
+      )
+      .subscribe({
+        next: ([taskSuccess, userSuccess]) => {
+          if (taskSuccess && userSuccess) {
+            console.log('User assigned to task successfully');
+            this.cancelAssigning();
+          } else {
+            alert('Error assigning user to task. Please try again.');
+          }
+        },
+        error: (error) => {
+          console.error('Error assigning user to task:', error);
+          alert('Error assigning user to task. Please try again.');
+        },
+      });
+  }
+
+  unassignUserFromTask(taskId: number) {
+    const task = this.tasks.find((t) => t.id === taskId);
+
+    if (!task?.assignedUserId) {
+      return;
+    }
+
+    if (confirm('Are you sure you want to unassign the user from this task?')) {
+      this.isLoading = true;
+
+      combineLatest([
+        this.taskService.unassignUserFromTask(taskId),
+        this.userService.unassignTaskFromUser(task.assignedUserId),
+      ])
+        .pipe(
+          takeUntil(this.destroy$),
+          finalize(() => {
+            this.isLoading = false;
+            this.cdr.markForCheck();
+          })
+        )
+        .subscribe({
+          next: ([taskSuccess, userSuccess]) => {
+            if (taskSuccess && userSuccess) {
+              console.log('User unassigned from task successfully');
+            } else {
+              alert('Error unassigning user from task. Please try again.');
+            }
+          },
+          error: (error) => {
+            console.error('Error unassigning user from task:', error);
+            alert('Error unassigning user from task. Please try again.');
+          },
+        });
+    }
+  }
+
+  // Helper Methods
+  getAssignedUser(task: Task): User | undefined {
+    if (!task.assignedUserId) return undefined;
+    return this.users.find((user) => user.id === task.assignedUserId);
+  }
+
+  getUserName(task: Task): string {
+    const user = this.getAssignedUser(task);
+    return user ? user.name : 'Unassigned';
+  }
+
+  getAvailableUsers(): User[] {
+    return this.users.filter((user) => !user.assignedTaskId);
+  }
+
+  canAssignUser(task: Task): boolean {
+    return task.state !== 'done';
+  }
+
+  getStateClass(state: TaskState): string {
+    return this.taskService.getStateClass(state);
   }
 
   formatDate(date: Date): string {
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(new Date(date));
+    return this.taskService.formatDate(date);
   }
 }
